@@ -1,0 +1,1 @@
+curl -X PUT "http://$ELASTICSEARCH_HOST/equivvy"

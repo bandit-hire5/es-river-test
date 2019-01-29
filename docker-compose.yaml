@@ -1,0 +1,44 @@
+version: "2.1"
+
+services:
+  equivvy-search-index:
+    image: equivvy-search-index
+    container_name: equivvy-search-index
+    environment:
+      - ELASTICSEARCH_HOST=127.0.0.1:9200
+      - COUCHDB_HOST=172.17.0.1:5984
+    ports:
+      - 9200:9200
+      - 9300:9300
+    user: elasticsearch
+    command:  bash -c "elasticsearch -d && sleep 10 && ./init.sh && sleep infinity"
+
+  equivvy-search-index-products:
+    image: gesellix/river
+    container_name: equivvy-search-index-products
+    environment:
+      - couch2elastic4sync_database=http://172.17.0.1:5984/products
+      - couch2elastic4sync_elasticsearch=http://172.17.0.1:9200/equivvy/products
+      - couch2elastic4sync_end_on_catchup=false
+    depends_on:
+      - equivvy-search-index
+
+  equivvy-search-index-models:
+    image: gesellix/river
+    container_name: equivvy-search-index-models
+    environment:
+      - couch2elastic4sync_database=http://172.17.0.1:5984/models
+      - couch2elastic4sync_elasticsearch=http://172.17.0.1:9200/equivvy/models
+      - couch2elastic4sync_end_on_catchup=false
+    depends_on:
+      - equivvy-search-index
+
+  equivvy-search-index-orders:
+    image: gesellix/river
+    container_name: equivvy-search-index-order
+    environment:
+      - couch2elastic4sync_database=http://172.17.0.1:5984/orders
+      - couch2elastic4sync_elasticsearch=http://172.17.0.1:9200/equivvy/orders
+      - couch2elastic4sync_end_on_catchup=false
+    depends_on:
+      - equivvy-search-index
